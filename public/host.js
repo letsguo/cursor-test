@@ -203,12 +203,13 @@ const render = () => {
 
   const isActive = state.phase === "active";
   const isReveal = state.phase === "reveal";
+  const revealComplete = state.revealCount >= state.categories.length;
 
   elements.lockBtn.disabled = !isActive;
   elements.revealNextBtn.disabled =
     !isReveal || state.revealCount >= state.categories.length;
   elements.revealAllBtn.disabled = !isReveal;
-  elements.submitScoresBtn.disabled = !isReveal;
+  elements.submitScoresBtn.disabled = !isReveal || !revealComplete;
   elements.betA.disabled = !isActive;
   elements.betB.disabled = !isActive;
 

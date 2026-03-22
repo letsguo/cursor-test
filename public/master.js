@@ -4,6 +4,7 @@ const socket = io();
 const elements = {
   badge: document.getElementById("masterTeamBadge"),
   status: document.getElementById("masterStatus"),
+  error: document.getElementById("masterError"),
   cardList: document.getElementById("masterCardList"),
   submitBtn: document.getElementById("submitMasterBtn"),
 };
@@ -113,11 +114,22 @@ const render = () => {
 
 socket.on("game:state", (nextState) => {
   state = nextState;
+  elements.error.textContent = "";
   render();
 });
 
 elements.submitBtn.addEventListener("click", () => {
   if (!team) return;
+  const currentTeam = teamState();
+  if (!state || !currentTeam) {
+    return;
+  }
+  const total = state.categories.length;
+  const answered = currentTeam.masterAnswers.filter(Boolean).length;
+  if (total > 0 && answered < total) {
+    elements.error.textContent = `Please answer all ${total} categories before submitting.`;
+    return;
+  }
   socket.emit("master:submit", { team });
 });
 

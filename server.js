@@ -118,6 +118,14 @@ const getRevealedCorrectCount = (teamId) => {
 const getMaskedAnswersForReveal = (answers) =>
   answers.map((answer, index) => (index < gameState.revealCount ? answer : null));
 
+const hasCompleteMasterAnswers = (teamId) => {
+  const answers = gameState.teams[teamId].masterAnswers;
+  if (answers.length !== gameState.categories.length) {
+    return false;
+  }
+  return answers.every((answer) => ANSWERS.has(answer));
+};
+
 const getStateForClient = (socket) => {
   const view = clientViews.get(socket.id) || { role: "host", team: null };
   const nextState = cloneState();
@@ -329,6 +337,10 @@ io.on("connection", (socket) => {
     if (!isRevealPhase()) {
       return;
     }
+    if (gameState.revealCount < gameState.categories.length) {
+      socket.emit("host:error", "Reveal all cards before submitting scores.");
+      return;
+    }
     submitRoundScores();
     broadcastState();
   });
@@ -361,6 +373,11 @@ io.on("connection", (socket) => {
   socket.on("master:submit", (payload = {}) => {
     const { team } = payload;
     if (!isRoundActive() || !isTeam(team)) {
+      return;
+    }
+    ensureRoundArrays();
+    if (!hasCompleteMasterAnswers(team)) {
+      socket.emit("master:error", "Answer every category before submitting.");
       return;
     }
     gameState.teams[team].masterSubmitted = true;
