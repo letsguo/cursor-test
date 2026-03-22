@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Guess the Master - Master Input</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="mobile-layout">
+      <header class="topbar">
+        <h1>Master Input</h1>
+        <div id="masterTeamBadge" class="badge">Team ?</div>
+      </header>
+
+      <section class="panel">
+        <p id="masterStatus" class="help">
+          Waiting for host to start a round...
+        </p>
+        <p id="masterError" class="error"></p>
+      </section>
+
+      <section class="panel">
+        <h2>Categories</h2>
+        <div id="masterCardList" class="master-card-list"></div>
+      </section>
+
+      <section class="panel">
+        <div class="actions wrap">
+          <button id="submitMasterBtn">Submit Answers</button>
+        </div>
+      </section>
+    </main>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/shared.js"></script>
+    <script src="/master.js"></script>
+  </body>
+</html>

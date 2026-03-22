@@ -1,0 +1,22 @@
+{
+  "name": "guess-the-master-game",
+  "version": "1.0.0",
+  "description": "Realtime Guess the Master team game",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "game",
+    "socket.io",
+    "team-game"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.21.2",
+    "socket.io": "^4.8.1",
+    "socket.io-client": "^4.8.3"
+  }
+}

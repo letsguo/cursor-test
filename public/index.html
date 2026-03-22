@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Guess the Master - Host</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="layout">
+      <header class="topbar">
+        <h1>Guess the Master</h1>
+        <div id="phaseBadge" class="badge">Phase: setup</div>
+      </header>
+
+      <section class="panel">
+        <h2>Round Setup</h2>
+        <p class="help">Enter 5-7 categories (one per line), then start round.</p>
+        <textarea id="categoriesInput" rows="7" placeholder="Camping&#10;Karaoke&#10;Spicy Food&#10;Road Trips&#10;Video Games"></textarea>
+        <div class="actions">
+          <button id="startRoundBtn">Start Round</button>
+          <span id="hostError" class="error"></span>
+        </div>
+      </section>
+
+      <section class="panel scoreboard">
+        <h2>Scoreboard</h2>
+        <div class="score-grid">
+          <article>
+            <h3>Team A</h3>
+            <p class="score" id="teamAScore">0</p>
+            <label>Bet
+              <input id="betA" type="number" min="0" value="0" />
+            </label>
+            <p>Revealed Correct: <strong id="revealedA">0</strong></p>
+          </article>
+          <article>
+            <h3>Team B</h3>
+            <p class="score" id="teamBScore">0</p>
+            <label>Bet
+              <input id="betB" type="number" min="0" value="0" />
+            </label>
+            <p>Revealed Correct: <strong id="revealedB">0</strong></p>
+          </article>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Host Controls</h2>
+        <div class="actions wrap">
+          <button id="lockBtn">Lock Guesses</button>
+          <button id="revealNextBtn">Reveal Next</button>
+          <button id="revealAllBtn">Reveal All</button>
+          <button id="submitScoresBtn">Submit Scores / End Round</button>
+          <button id="resetRoundBtn">Reset For Next Round</button>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Category Cards</h2>
+        <div id="cardsGrid" class="cards-grid"></div>
+      </section>
+
+      <section class="panel">
+        <h2>Team Guess Inputs (Host Assisted)</h2>
+        <p class="help">Optional: record each team guess to auto-calculate scoring.</p>
+        <div id="guessTables" class="guess-tables"></div>
+      </section>
+
+      <section class="panel">
+        <h2>Master Device Links</h2>
+        <p class="help">
+          Open these links on each team's Master phone:
+          <a href="/master.html?team=A" target="_blank" rel="noreferrer">Team A Master</a>
+          |
+          <a href="/master.html?team=B" target="_blank" rel="noreferrer">Team B Master</a>
+          <br />
+          For spectators, open <a href="/viewer.html" target="_blank" rel="noreferrer">Viewer Screen</a>.
+        </p>
+      </section>
+
+      <section id="roundSummaryPanel" class="panel hidden">
+        <h2>Last Round Summary</h2>
+        <pre id="roundSummary"></pre>
+      </section>
+    </main>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/shared.js"></script>
+    <script src="/host.js"></script>
+  </body>
+</html>

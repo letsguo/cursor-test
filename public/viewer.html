@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Guess the Master - Viewer</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="layout">
+      <header class="topbar">
+        <h1>Guess the Master — Viewer</h1>
+        <div id="phaseBadge" class="badge">Phase: setup</div>
+      </header>
+
+      <section class="panel scoreboard">
+        <h2>Scoreboard</h2>
+        <div class="score-grid">
+          <article>
+            <h3>Team A</h3>
+            <p class="score" id="teamAScore">0</p>
+            <p>Bet: <strong id="betA">0</strong></p>
+            <p>Revealed Correct: <strong id="revealedA">0</strong></p>
+          </article>
+          <article>
+            <h3>Team B</h3>
+            <p class="score" id="teamBScore">0</p>
+            <p>Bet: <strong id="betB">0</strong></p>
+            <p>Revealed Correct: <strong id="revealedB">0</strong></p>
+          </article>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Category Cards</h2>
+        <div id="cardsGrid" class="cards-grid"></div>
+      </section>
+    </main>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/shared.js"></script>
+    <script src="/viewer.js"></script>
+  </body>
+</html>
