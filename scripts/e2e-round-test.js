@@ -65,6 +65,9 @@ async function run() {
   masterB.emit("client:setView", { role: "master", team: "B" });
   viewer.emit("client:setView", { role: "host" });
 
+  const initialScoreA = hostState.current.teams.A.score;
+  const initialScoreB = hostState.current.teams.B.score;
+
   host.emit("host:startRound", { categories });
   await waitFor(
     () => hostState.current && hostState.current.phase === "active",
@@ -177,8 +180,14 @@ async function run() {
   expect(summaryB.correct === 3, `Expected Team B correct=3, got ${summaryB.correct}`);
   expect(summaryA.total === 5, `Expected Team A total=5, got ${summaryA.total}`);
   expect(summaryB.total === 1, `Expected Team B total=1, got ${summaryB.total}`);
-  expect(finalState.teams.A.score === 5, `Expected Team A score=5, got ${finalState.teams.A.score}`);
-  expect(finalState.teams.B.score === 1, `Expected Team B score=1, got ${finalState.teams.B.score}`);
+  expect(
+    finalState.teams.A.score === initialScoreA + 5,
+    `Expected Team A score delta +5, got ${finalState.teams.A.score - initialScoreA}`
+  );
+  expect(
+    finalState.teams.B.score === initialScoreB + 1,
+    `Expected Team B score delta +1, got ${finalState.teams.B.score - initialScoreB}`
+  );
 
   // Viewer should also be synced to roundEnd.
   expect(

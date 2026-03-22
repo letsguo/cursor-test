@@ -5,7 +5,22 @@ const { Server } = require("socket.io");
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server);
+const parseCorsOrigins = () => {
+  const raw = process.env.CORS_ORIGINS;
+  if (!raw || raw.trim() === "*") {
+    return "*";
+  }
+  return raw
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+};
+const io = new Server(server, {
+  cors: {
+    origin: parseCorsOrigins(),
+    methods: ["GET", "POST"],
+  },
+});
 
 const PORT = process.env.PORT || 3000;
 const TEAM_IDS = ["A", "B"];

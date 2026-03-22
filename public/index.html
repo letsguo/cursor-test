@@ -15,6 +15,17 @@
 
       <section class="panel">
         <h2>Round Setup</h2>
+        <p class="help">Socket Backend URL (for Vercel frontend): leave blank for same-origin local server.</p>
+        <div class="actions wrap">
+          <input
+            id="socketUrlInput"
+            type="text"
+            placeholder="https://your-backend.example.com"
+            aria-label="Socket backend URL"
+          />
+          <button id="saveSocketUrlBtn">Save Backend URL</button>
+          <button id="clearSocketUrlBtn">Use Same-Origin</button>
+        </div>
         <p class="help">Enter 5-7 categories (one per line), then start round.</p>
         <textarea id="categoriesInput" rows="7" placeholder="Camping&#10;Karaoke&#10;Spicy Food&#10;Road Trips&#10;Video Games"></textarea>
         <div class="actions">
@@ -71,11 +82,11 @@
         <h2>Master Device Links</h2>
         <p class="help">
           Open these links on each team's Master phone:
-          <a href="/master.html?team=A" target="_blank" rel="noreferrer">Team A Master</a>
+          <a id="masterALink" href="/master.html?team=A" target="_blank" rel="noreferrer">Team A Master</a>
           |
-          <a href="/master.html?team=B" target="_blank" rel="noreferrer">Team B Master</a>
+          <a id="masterBLink" href="/master.html?team=B" target="_blank" rel="noreferrer">Team B Master</a>
           <br />
-          For spectators, open <a href="/viewer.html" target="_blank" rel="noreferrer">Viewer Screen</a>.
+          For spectators, open <a id="viewerLink" href="/viewer.html" target="_blank" rel="noreferrer">Viewer Screen</a>.
         </p>
       </section>
 
@@ -85,7 +96,7 @@
       </section>
     </main>
 
-    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
     <script src="/shared.js"></script>
     <script src="/host.js"></script>
   </body>

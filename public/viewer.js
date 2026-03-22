@@ -1,4 +1,4 @@
-const socket = io();
+const socket = window.GTM.createSocket();
 socket.emit("client:setView", { role: "host" });
 
 const elements = {

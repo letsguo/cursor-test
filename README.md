@@ -2,6 +2,44 @@
 
 Realtime party game for two teams where players guess their team's Master likes/dislikes across category cards.
 
+## Deployment model (recommended)
+
+Because this app uses Socket.IO, deploy with:
+
+- **Frontend static UI on Vercel**
+- **Backend Node/Socket.IO server on a socket-friendly host** (Render, Railway, Fly, etc.)
+
+### Why split deployment
+
+Vercel is excellent for static frontend hosting, but this app needs a persistent realtime socket server process.
+
+## Quick deploy steps
+
+### 1) Deploy backend (`server.js`) on Render/Railway/Fly
+
+- Build command: `npm install`
+- Start command: `npm start`
+- Environment:
+  - `PORT` (provided by platform)
+  - `CORS_ORIGINS=https://<your-vercel-domain>,http://localhost:3000`
+
+After deploy, note your backend URL, e.g.:
+`https://guess-master-backend.onrender.com`
+
+### 2) Deploy frontend to Vercel
+
+This repository already includes `vercel.json` for static hosting defaults.
+
+On first load of the host page (`/`):
+- Enter backend URL in **Socket Backend URL**
+- Click **Save Backend URL**
+
+This value is stored in browser localStorage and shared by host/master/viewer pages on that device.
+
+The host page also automatically rewrites the Team A / Team B / Viewer links to include `socketUrl=...` query params, so those devices connect to the same backend immediately.
+
+You can clear it via **Use Same-Origin** for local development.
+
 ## What is implemented
 
 - **Host screen** (`/`)
@@ -59,3 +97,16 @@ Then open:
 - Masters:
   - `http://localhost:3000/master.html?team=A`
   - `http://localhost:3000/master.html?team=B`
+
+## Automated end-to-end test
+
+```bash
+node scripts/e2e-round-test.js
+```
+
+This test simulates host + both masters + viewer over Socket.IO and validates:
+- round flow transitions
+- answer privacy before reveal
+- reveal behavior
+- score calculations
+- reset behavior

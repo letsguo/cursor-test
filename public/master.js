@@ -1,5 +1,5 @@
 const team = window.GTM.parseTeamFromUrl();
-const socket = io();
+const socket = window.GTM.createSocket();
 
 const elements = {
   badge: document.getElementById("masterTeamBadge"),
@@ -116,6 +116,10 @@ socket.on("game:state", (nextState) => {
   state = nextState;
   elements.error.textContent = "";
   render();
+});
+
+socket.on("master:error", (message) => {
+  elements.error.textContent = message || "Unable to submit answers.";
 });
 
 elements.submitBtn.addEventListener("click", () => {

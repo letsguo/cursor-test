@@ -1,8 +1,11 @@
-const socket = io();
+const socket = window.GTM.createSocket();
 socket.emit("client:setView", { role: "host" });
 
 const elements = {
   phaseBadge: document.getElementById("phaseBadge"),
+  socketUrlInput: document.getElementById("socketUrlInput"),
+  saveSocketUrlBtn: document.getElementById("saveSocketUrlBtn"),
+  clearSocketUrlBtn: document.getElementById("clearSocketUrlBtn"),
   categoriesInput: document.getElementById("categoriesInput"),
   startRoundBtn: document.getElementById("startRoundBtn"),
   hostError: document.getElementById("hostError"),
@@ -21,6 +24,9 @@ const elements = {
   guessTables: document.getElementById("guessTables"),
   roundSummaryPanel: document.getElementById("roundSummaryPanel"),
   roundSummary: document.getElementById("roundSummary"),
+  masterALink: document.getElementById("masterALink"),
+  masterBLink: document.getElementById("masterBLink"),
+  viewerLink: document.getElementById("viewerLink"),
 };
 
 let state = null;
@@ -228,6 +234,28 @@ socket.on("host:error", (message) => {
   elements.hostError.textContent = message || "Unable to perform that action.";
 });
 
+const refreshSocketControls = () => {
+  const current = window.GTM.getSocketUrl();
+  elements.socketUrlInput.value = current;
+  const socketQuery = current ? `socketUrl=${encodeURIComponent(current)}` : "";
+  const teamAQuery = socketQuery ? `?team=A&${socketQuery}` : "?team=A";
+  const teamBQuery = socketQuery ? `?team=B&${socketQuery}` : "?team=B";
+  const viewerQuery = socketQuery ? `?${socketQuery}` : "";
+  elements.masterALink.href = `/master.html${teamAQuery}`;
+  elements.masterBLink.href = `/master.html${teamBQuery}`;
+  elements.viewerLink.href = `/viewer.html${viewerQuery}`;
+};
+
+elements.saveSocketUrlBtn.addEventListener("click", () => {
+  window.GTM.setSocketUrl(elements.socketUrlInput.value);
+  window.location.reload();
+});
+
+elements.clearSocketUrlBtn.addEventListener("click", () => {
+  window.GTM.setSocketUrl("");
+  window.location.reload();
+});
+
 elements.startRoundBtn.addEventListener("click", () => {
   socket.emit("host:startRound", { categories: categoriesFromInput() });
 });
@@ -277,3 +305,5 @@ elements.betB.addEventListener("change", () => {
     bet: nextBet,
   });
 });
+
+refreshSocketControls();
