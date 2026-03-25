@@ -1,5 +1,4 @@
 const team = window.GTM.parseTeamFromUrl();
-const socket = window.GTM.createSocket();
 
 const elements = {
   badge: document.getElementById("masterTeamBadge"),
@@ -17,7 +16,6 @@ if (!team) {
   elements.submitBtn.disabled = true;
 } else {
   elements.badge.textContent = `Team ${team}`;
-  socket.emit("client:setView", { role: "master", team });
 }
 
 const teamState = () => {
@@ -28,11 +26,15 @@ const teamState = () => {
 };
 
 const setAnswer = (index, answer) => {
-  socket.emit("master:updateAnswer", { team, index, answer });
+  window.GTM.masterAction("updateAnswer", { team, index, answer }).catch((error) => {
+    elements.error.textContent = error.message;
+  });
 };
 
 const clearAnswer = (index) => {
-  socket.emit("master:clearAnswer", { team, index });
+  window.GTM.masterAction("clearAnswer", { team, index }).catch((error) => {
+    elements.error.textContent = error.message;
+  });
 };
 
 const renderCards = () => {
@@ -112,15 +114,11 @@ const render = () => {
   renderCards();
 };
 
-socket.on("game:state", (nextState) => {
+const onState = (nextState) => {
   state = nextState;
   elements.error.textContent = "";
   render();
-});
-
-socket.on("master:error", (message) => {
-  elements.error.textContent = message || "Unable to submit answers.";
-});
+};
 
 elements.submitBtn.addEventListener("click", () => {
   if (!team) return;
@@ -134,6 +132,14 @@ elements.submitBtn.addEventListener("click", () => {
     elements.error.textContent = `Please answer all ${total} categories before submitting.`;
     return;
   }
-  socket.emit("master:submit", { team });
+  window.GTM.masterAction("submit", { team }).catch((error) => {
+    elements.error.textContent = error.message;
+  });
 });
+
+if (team) {
+  window.GTM.startPollingState("master", team, onState, (error) => {
+    elements.error.textContent = error.message || "Unable to load state.";
+  });
+}
 

@@ -1,6 +1,3 @@
-const socket = window.GTM.createSocket();
-socket.emit("client:setView", { role: "host" });
-
 const elements = {
   phaseBadge: document.getElementById("phaseBadge"),
   teamAScore: document.getElementById("teamAScore"),
@@ -84,7 +81,9 @@ const render = () => {
   renderCards();
 };
 
-socket.on("game:state", (nextState) => {
+const onState = (nextState) => {
   state = nextState;
   render();
-});
+};
+
+window.GTM.startPollingState("viewer", null, onState);

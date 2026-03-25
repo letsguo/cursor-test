@@ -1,11 +1,5 @@
-const socket = window.GTM.createSocket();
-socket.emit("client:setView", { role: "host" });
-
 const elements = {
   phaseBadge: document.getElementById("phaseBadge"),
-  socketUrlInput: document.getElementById("socketUrlInput"),
-  saveSocketUrlBtn: document.getElementById("saveSocketUrlBtn"),
-  clearSocketUrlBtn: document.getElementById("clearSocketUrlBtn"),
   categoriesInput: document.getElementById("categoriesInput"),
   startRoundBtn: document.getElementById("startRoundBtn"),
   hostError: document.getElementById("hostError"),
@@ -59,7 +53,9 @@ const getRevealedCorrect = (teamId) => {
 };
 
 const setGuess = (team, index, guess) => {
-  socket.emit("host:setGuess", { team, index, guess });
+  window.GTM.hostAction("setGuess", { team, index, guess }).catch((error) => {
+    elements.hostError.textContent = error.message;
+  });
 };
 
 const renderGuessTable = (teamId) => {
@@ -224,60 +220,52 @@ const render = () => {
   renderSummary();
 };
 
-socket.on("game:state", (nextState) => {
+const onState = (nextState) => {
   state = nextState;
   elements.hostError.textContent = "";
   render();
-});
-
-socket.on("host:error", (message) => {
-  elements.hostError.textContent = message || "Unable to perform that action.";
-});
-
-const refreshSocketControls = () => {
-  const current = window.GTM.getSocketUrl();
-  elements.socketUrlInput.value = current;
-  const socketQuery = current ? `socketUrl=${encodeURIComponent(current)}` : "";
-  const teamAQuery = socketQuery ? `?team=A&${socketQuery}` : "?team=A";
-  const teamBQuery = socketQuery ? `?team=B&${socketQuery}` : "?team=B";
-  const viewerQuery = socketQuery ? `?${socketQuery}` : "";
-  elements.masterALink.href = `/master.html${teamAQuery}`;
-  elements.masterBLink.href = `/master.html${teamBQuery}`;
-  elements.viewerLink.href = `/viewer.html${viewerQuery}`;
 };
 
-elements.saveSocketUrlBtn.addEventListener("click", () => {
-  window.GTM.setSocketUrl(elements.socketUrlInput.value);
-  window.location.reload();
-});
-
-elements.clearSocketUrlBtn.addEventListener("click", () => {
-  window.GTM.setSocketUrl("");
-  window.location.reload();
-});
+const updateShareLinks = () => {
+  elements.masterALink.href = "/master.html?team=A";
+  elements.masterBLink.href = "/master.html?team=B";
+  elements.viewerLink.href = "/viewer.html";
+};
 
 elements.startRoundBtn.addEventListener("click", () => {
-  socket.emit("host:startRound", { categories: categoriesFromInput() });
+  window.GTM.hostAction("startRound", { categories: categoriesFromInput() }).catch((error) => {
+    elements.hostError.textContent = error.message;
+  });
 });
 
 elements.lockBtn.addEventListener("click", () => {
-  socket.emit("host:lockGuesses");
+  window.GTM.hostAction("lockGuesses").catch((error) => {
+    elements.hostError.textContent = error.message;
+  });
 });
 
 elements.revealNextBtn.addEventListener("click", () => {
-  socket.emit("host:revealNext");
+  window.GTM.hostAction("revealNext").catch((error) => {
+    elements.hostError.textContent = error.message;
+  });
 });
 
 elements.revealAllBtn.addEventListener("click", () => {
-  socket.emit("host:revealAll");
+  window.GTM.hostAction("revealAll").catch((error) => {
+    elements.hostError.textContent = error.message;
+  });
 });
 
 elements.submitScoresBtn.addEventListener("click", () => {
-  socket.emit("host:submitScores");
+  window.GTM.hostAction("submitScores").catch((error) => {
+    elements.hostError.textContent = error.message;
+  });
 });
 
 elements.resetRoundBtn.addEventListener("click", () => {
-  socket.emit("host:resetForNextRound");
+  window.GTM.hostAction("resetForNextRound").catch((error) => {
+    elements.hostError.textContent = error.message;
+  });
 });
 
 elements.betA.addEventListener("change", () => {
@@ -287,9 +275,11 @@ elements.betA.addEventListener("change", () => {
   const max = state.categories.length || 0;
   const nextBet = clamp(Number.parseInt(elements.betA.value, 10) || 0, 0, max);
   elements.betA.value = String(nextBet);
-  socket.emit("host:setBet", {
+  window.GTM.hostAction("setBet", {
     team: "A",
     bet: nextBet,
+  }).catch((error) => {
+    elements.hostError.textContent = error.message;
   });
 });
 
@@ -300,10 +290,15 @@ elements.betB.addEventListener("change", () => {
   const max = state.categories.length || 0;
   const nextBet = clamp(Number.parseInt(elements.betB.value, 10) || 0, 0, max);
   elements.betB.value = String(nextBet);
-  socket.emit("host:setBet", {
+  window.GTM.hostAction("setBet", {
     team: "B",
     bet: nextBet,
+  }).catch((error) => {
+    elements.hostError.textContent = error.message;
   });
 });
 
-refreshSocketControls();
+updateShareLinks();
+window.GTM.startPollingState("host", null, onState, (error) => {
+  elements.hostError.textContent = error.message || "Unable to load state.";
+});

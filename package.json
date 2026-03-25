@@ -2,21 +2,25 @@
   "name": "guess-the-master-game",
   "version": "1.0.0",
   "description": "Realtime Guess the Master team game",
-  "main": "server.js",
+  "main": "api/state.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "node server.js"
+    "start": "vercel dev",
+    "dev": "vercel dev",
+    "dev:local-api": "node scripts/local-api-server.js",
+    "test:e2e": "node scripts/e2e-round-test.js"
   },
   "keywords": [
     "game",
-    "socket.io",
+    "vercel",
+    "serverless",
     "team-game"
   ],
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "express": "^4.21.2",
-    "socket.io": "^4.8.1",
-    "socket.io-client": "^4.8.3"
+    "@upstash/redis": "^1.37.0"
+  },
+  "devDependencies": {
+    "vercel": "^39.3.0"
   }
 }

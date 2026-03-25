@@ -1,96 +1,37 @@
 # Guess the Master
 
-Realtime party game for two teams where players guess their team's Master likes/dislikes across category cards.
+Team-based party game where players guess their Master teammate's likes/dislikes.
 
-## Deployment model (recommended)
+## Fully-on-Vercel architecture
 
-Because this app uses Socket.IO, deploy with:
+This project is now Vercel-first:
 
-- **Frontend static UI on Vercel**
-- **Backend Node/Socket.IO server on a socket-friendly host** (Render, Railway, Fly, etc.)
+- Static UI pages in `public/`
+- Serverless API routes in `api/`
+- Shared game state in Upstash Redis (via Vercel integration)
+- Client updates via short polling (no custom socket server required)
 
-### Why split deployment
+## Deploy on Vercel only
 
-Vercel is excellent for static frontend hosting, but this app needs a persistent realtime socket server process.
+1. Import this repository into Vercel.
+2. Add the **Upstash Redis** integration in Vercel.
+3. Ensure env vars are present:
+   - `KV_REST_API_URL`
+   - `KV_REST_API_TOKEN`
+4. Deploy.
 
-## Quick deploy steps
+No separate backend host is required.
 
-### 1) Deploy backend (`server.js`) on Render/Railway/Fly
+## Local run
 
-- Build command: `npm install`
-- Start command: `npm start`
-- Environment:
-  - `PORT` (provided by platform)
-  - `CORS_ORIGINS=https://<your-vercel-domain>,http://localhost:3000`
-
-After deploy, note your backend URL, e.g.:
-`https://guess-master-backend.onrender.com`
-
-### 2) Deploy frontend to Vercel
-
-This repository already includes `vercel.json` for static hosting defaults.
-
-On first load of the host page (`/`):
-- Enter backend URL in **Socket Backend URL**
-- Click **Save Backend URL**
-
-This value is stored in browser localStorage and shared by host/master/viewer pages on that device.
-
-The host page also automatically rewrites the Team A / Team B / Viewer links to include `socketUrl=...` query params, so those devices connect to the same backend immediately.
-
-You can clear it via **Use Same-Origin** for local development.
-
-## What is implemented
-
-- **Host screen** (`/`)
-  - Start round with 5-7 categories
-  - Set bets for Team A and Team B
-  - Record team guesses (optional assisted scoring)
-  - Lock guesses
-  - Reveal cards one by one or all at once
-  - Submit round scoring
-  - Reset for next round
-  - Live scoreboard + round summary
-
-- **Master private input screens**
-  - Team A Master: `/master.html?team=A`
-  - Team B Master: `/master.html?team=B`
-  - Masters can choose 👍 Like / 👎 Dislike per category
-  - Answers lock after submit or host lock
-
-- **Viewer display** (`/viewer.html`)
-  - Shows scoreboard + card reveals for spectators/projector
-
-- **Realtime sync**
-  - Built with Socket.IO
-  - All host/master/viewer clients stay in sync
-
-## Scoring rules implemented
-
-Per team each round:
-
-1. **Base points:** `+1` per correct guess
-2. **Round winner bonus:** `+3` to team with more correct guesses (no bonus on tie)
-3. **Bet outcome:**
-   - `+2` if correct guesses >= bet
-   - `-2` otherwise
-
-Round total is added to cumulative team score.
-
-## Privacy/lock behavior
-
-- Master answers are hidden from host/viewers until each card is revealed.
-- Masters can edit only during active phase before submitting.
-- Host `Lock Guesses` moves game to reveal phase and prevents further edits.
-
-## Run locally
+Use Vercel local dev so API routes run correctly:
 
 ```bash
 npm install
-npm start
+npm run dev
 ```
 
-Then open:
+Open:
 
 - Host: `http://localhost:3000/`
 - Viewer: `http://localhost:3000/viewer.html`
@@ -98,15 +39,37 @@ Then open:
   - `http://localhost:3000/master.html?team=A`
   - `http://localhost:3000/master.html?team=B`
 
-## Automated end-to-end test
+## Game flow implemented
+
+- Start round with 5-7 categories
+- Team bets
+- Host-assisted team guesses
+- Master inputs (private before reveal)
+- Lock phase
+- Reveal next/all
+- Submit scores
+- Reset for next round
+
+## Scoring
+
+Per team each round:
+
+1. `+1` per correct guess
+2. `+3` winner bonus for team with more correct (no bonus on tie)
+3. Bet modifier:
+   - `+2` if correct >= bet
+   - `-2` otherwise
+
+## Automated test
 
 ```bash
-node scripts/e2e-round-test.js
+npm run test:e2e
 ```
 
-This test simulates host + both masters + viewer over Socket.IO and validates:
-- round flow transitions
-- answer privacy before reveal
-- reveal behavior
-- score calculations
+The E2E script hits Vercel API endpoints and validates:
+
+- phase transitions
+- pre-reveal privacy
+- reveal progression
+- score math
 - reset behavior

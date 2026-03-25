@@ -1,56 +1,4 @@
 window.GTM = (() => {
-  const normalizeSocketUrl = (value) => {
-    if (!value) {
-      return "";
-    }
-    const trimmed = String(value).trim();
-    return trimmed.replace(/\/+$/, "");
-  };
-
-  const getSocketUrlFromQuery = () => {
-    const params = new URLSearchParams(window.location.search);
-    const fromQuery = params.get("socketUrl");
-    if (!fromQuery || !String(fromQuery).trim()) {
-      return "";
-    }
-    return normalizeSocketUrl(fromQuery);
-  };
-
-  const getSocketUrl = () => {
-    const fromQuery = getSocketUrlFromQuery();
-    if (fromQuery) {
-      window.localStorage.setItem("gtm:socketUrl", fromQuery);
-      return fromQuery;
-    }
-    const fromWindow = window.__GTM_SOCKET_URL__;
-    if (fromWindow && String(fromWindow).trim()) {
-      return normalizeSocketUrl(fromWindow);
-    }
-    const fromStorage = window.localStorage.getItem("gtm:socketUrl");
-    if (fromStorage && String(fromStorage).trim()) {
-      return normalizeSocketUrl(fromStorage);
-    }
-    return "";
-  };
-
-  const setSocketUrl = (nextValue) => {
-    const normalized = normalizeSocketUrl(nextValue);
-    if (!normalized) {
-      window.localStorage.removeItem("gtm:socketUrl");
-      return;
-    }
-    window.localStorage.setItem("gtm:socketUrl", normalized);
-  };
-
-  const createSocket = () => {
-    const socketUrl = getSocketUrl();
-    const options = {
-      transports: ["websocket", "polling"],
-      withCredentials: false,
-    };
-    return socketUrl ? io(socketUrl, options) : io(options);
-  };
-
   const ANSWER_EMOJI = {
     like: "👍",
     dislike: "👎",
@@ -60,6 +8,8 @@ window.GTM = (() => {
     like: "Like",
     dislike: "Dislike",
   };
+
+  const POLL_INTERVAL_MS = 1000;
 
   const parseTeamFromUrl = () => {
     const params = new URLSearchParams(window.location.search);
@@ -85,15 +35,86 @@ window.GTM = (() => {
   const answerText = (answer) => ANSWER_LABEL[answer] || "—";
   const answerEmoji = (answer) => ANSWER_EMOJI[answer] || "❓";
 
+  const apiRequest = async (url, options = {}) => {
+    const response = await fetch(url, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      ...options,
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || !data.ok) {
+      throw new Error(data.error || "Request failed.");
+    }
+    return data;
+  };
+
+  const fetchState = async (role, team) => {
+    const params = new URLSearchParams();
+    params.set("role", role || "host");
+    if (team) {
+      params.set("team", team);
+    }
+    const data = await apiRequest(`/api/state?${params.toString()}`, {
+      method: "GET",
+    });
+    return data.state;
+  };
+
+  const hostAction = async (action, payload = {}) =>
+    apiRequest("/api/host-action", {
+      method: "POST",
+      body: JSON.stringify({ action, payload }),
+    });
+
+  const masterAction = async (action, payload = {}) =>
+    apiRequest("/api/master-action", {
+      method: "POST",
+      body: JSON.stringify({ action, payload }),
+    });
+
+  const startPollingState = (role, team, onState, onError) => {
+    let timer = null;
+    let stopped = false;
+    let inFlight = false;
+
+    const tick = async () => {
+      if (stopped || inFlight) {
+        return;
+      }
+      inFlight = true;
+      try {
+        const state = await fetchState(role, team);
+        onState(state);
+      } catch (error) {
+        if (onError) {
+          onError(error);
+        }
+      } finally {
+        inFlight = false;
+      }
+    };
+
+    tick();
+    timer = window.setInterval(tick, POLL_INTERVAL_MS);
+
+    return () => {
+      stopped = true;
+      if (timer) {
+        window.clearInterval(timer);
+      }
+    };
+  };
+
   return {
-    createSocket,
-    getSocketUrl,
-    getSocketUrlFromQuery,
-    setSocketUrl,
     parseTeamFromUrl,
     getPhaseLabel,
     answerText,
     answerEmoji,
+    fetchState,
+    hostAction,
+    masterAction,
+    startPollingState,
     ANSWER_EMOJI,
     ANSWER_LABEL,
   };
